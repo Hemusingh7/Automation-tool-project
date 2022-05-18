@@ -1,0 +1,57 @@
+import pyfiglet
+import sys
+import socket
+from datetime import datetime
+import requests
+
+ascii_banner = pyfiglet.figlet_format("PORT SCANNER AND SUBDOMAIN FINDER")
+print(ascii_banner)
+print('Enter ip adress for finding open ports')
+target=input()
+print('Enter doamin name for finding subdomain')
+domain = input()
+file = open('wordlist.txt','r')
+content = file.read()
+
+subdomains = content.splitlines()
+
+for subdomain in subdomains:
+	url1 = f"http://{subdomain}.{domain}"
+	url2 = f"https://{subdomain}.{domain}"
+	try:
+		requests.get(url1)
+		print(f"Discovered URL: {url1}")
+		requests.get(url2)
+		print(f"Discovered URL: {url2}")
+	except requests.ConnectionError:
+		pass
+
+
+# Add Banner
+print("-" * 50)
+print("Scanning Target: " + target)
+print("Scanning started at:" + str(datetime.now()))
+print("-" * 50)
+
+try:
+	
+	# will scan ports between 1 to 65,535
+	for port in range(1,65535):
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		socket.setdefaulttimeout(1)
+		
+		# returns an error indicator
+		result = s.connect_ex((target,port))
+		if result ==0:
+			print("Port {} is open".format(port))
+		s.close()
+		
+except KeyboardInterrupt:
+		print("\n Exiting Program !!!!")
+		sys.exit()
+except socket.gaierror:
+		print("\n Hostname Could Not Be Resolved !!!!")
+		sys.exit()
+except socket.error:
+		print("\ Server not responding !!!!")
+		sys.exit()
